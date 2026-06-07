@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>キャラクター図鑑（おためし版）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@500;700&display=swap');
+  :root{
+    --bg:#f4ead8;--bg2:#efe0c6;--ink:#3a2e22;--ink-soft:#7a6a55;
+    --card:#fffaf0;--line:#e2d2b4;--accent:#ff8a5b;--accent2:#ffd23f;
+    --atk:#ff6b6b;--hp:#51cf66;--def:#4dabf7;--spd:#ffd43b;--int:#cc5de8;
+    --shadow:0 6px 0 rgba(58,46,34,.12), 0 10px 24px rgba(58,46,34,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Zen Maru Gothic',sans-serif;color:var(--ink);
+    background:radial-gradient(circle at 20% 0%, #fff3dc 0%, transparent 40%),
+      radial-gradient(circle at 90% 10%, #ffe9c9 0%, transparent 35%),var(--bg);
+    background-attachment:fixed;min-height:100vh;padding-bottom:90px;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 14px;}
+  header{text-align:center;padding:22px 0 12px;}
+  header .logo{font-size:40px;line-height:1;}
+  header h1{font-family:'Mochiy Pop One',sans-serif;font-size:26px;margin:6px 0 2px;letter-spacing:.04em;}
+  header p{margin:0;color:var(--ink-soft);font-size:12px;}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:6px;}
+  @media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr);}}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:18px;overflow:hidden;
+    box-shadow:var(--shadow);cursor:pointer;transition:transform .12s ease;display:flex;flex-direction:column;}
+  .card:active{transform:scale(.97);}
+  .card .thumb{aspect-ratio:4/3;background:#d9cdb6;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .card .thumb img,.card .thumb svg{width:100%;height:100%;object-fit:cover;display:block;}
+  .card .thumb .ph{font-size:34px;opacity:.5;}
+  .card .body{padding:8px 10px 10px;}
+  .card .name{font-weight:700;font-size:15px;margin-bottom:6px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ministats{display:flex;flex-wrap:wrap;gap:3px 6px;font-size:10px;}
+  .ministats span{display:inline-flex;align-items:center;gap:2px;color:var(--ink-soft);font-weight:700;}
+  .cardrow{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+  .cardrow .ministats{flex:1;}
+  .minichart{width:62px;height:62px;flex:none;}
+  @media(min-width:560px){.minichart{width:70px;height:70px;}}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .addcard{border:2px dashed var(--line);background:transparent;border-radius:18px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;color:var(--ink-soft);min-height:160px;cursor:pointer;font-weight:700;gap:6px;}
+  .addcard .plus{font-size:34px;line-height:1;color:var(--accent);}
+  .addcard:active{transform:scale(.97);}
+
+  .overlay{position:fixed;inset:0;background:rgba(40,30,20,.55);backdrop-filter:blur(3px);
+    display:none;align-items:flex-end;justify-content:center;z-index:50;}
+  .overlay.show{display:flex;}
+  @media(min-width:560px){.overlay.show{align-items:center;}}
+  .sheet{background:var(--bg2);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;
+    border-radius:22px 22px 0 0;padding:18px 16px 28px;box-shadow:0 -8px 40px rgba(0,0,0,.3);animation:slideup .25s ease;}
+  @media(min-width:560px){.sheet{border-radius:22px;}}
+  @keyframes slideup{from{transform:translateY(40px);opacity:.6;}to{transform:none;opacity:1;}}
+  .sheet h2{font-family:'Mochiy Pop One',sans-serif;font-size:18px;margin:0 0 14px;text-align:center;}
+  .photo-zone{width:100%;aspect-ratio:4/3;border-radius:16px;border:2px solid var(--line);background:#d9cdb6;
+    overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:6px;}
+  .photo-zone img,.photo-zone svg{width:100%;height:100%;object-fit:cover;}
+  .photo-zone .hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#6b5a42;font-weight:700;gap:4px;pointer-events:none;}
+  .photo-zone .hint .ic{font-size:30px;}
+  .photo-btns{display:flex;gap:8px;margin-bottom:14px;}
+  .photo-btns button{flex:1;}
+  label.fld{display:block;margin-bottom:12px;}
+  label.fld .lab{font-size:13px;font-weight:700;margin-bottom:5px;display:block;}
+  input[type=text]{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+    font-size:16px;font-family:inherit;background:#fffaf0;color:var(--ink);}
+  input:focus{outline:none;border-color:var(--accent);}
+  .stat-row{display:flex;align-items:center;gap:10px;background:#fffaf0;border:2px solid var(--line);
+    border-radius:12px;padding:8px 12px;margin-bottom:8px;}
+  .stat-row .slab{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;width:96px;flex:none;}
+  .stat-row input{flex:1;width:100%;border:none;background:transparent;font-size:18px;font-weight:700;
+    text-align:right;font-family:inherit;color:var(--ink);}
+  .stat-row input:focus{outline:none;}
+  .chart-box{background:#fffaf0;border:2px solid var(--line);border-radius:16px;padding:6px;margin-bottom:14px;
+    display:flex;justify-content:center;}
+  .chart-box #sheetChart{width:240px;height:240px;max-width:100%;}
+
+  /* 詳細ページ */
+  .detail-sheet{position:relative;text-align:center;}
+  .sheet-close{position:absolute;top:6px;right:6px;width:36px;height:36px;border-radius:50%;
+    background:#fff;border:2px solid var(--line);color:var(--ink-soft);font-size:20px;line-height:1;padding:0;}
+  .detail-photo{width:100%;aspect-ratio:4/3;border-radius:16px;border:2px solid var(--line);
+    background:#d9cdb6;overflow:hidden;margin:4px 0 14px;display:flex;align-items:center;justify-content:center;}
+  .detail-photo img,.detail-photo svg{width:100%;height:100%;object-fit:cover;}
+  .detail-photo .ph{font-size:48px;opacity:.5;}
+  .detail-name{font-family:'Mochiy Pop One',sans-serif;font-size:24px;margin:0 0 10px;}
+  .detail-chart{width:260px;height:260px;max-width:100%;margin:0 auto 14px;}
+  .stat-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+  .stat-list .row{display:flex;align-items:center;gap:10px;background:#fffaf0;border:2px solid var(--line);
+    border-radius:12px;padding:10px 14px;}
+  .stat-list .row .nm{display:flex;align-items:center;gap:7px;font-weight:700;font-size:14px;width:96px;flex:none;text-align:left;}
+  .stat-list .row .bar{flex:1;height:10px;border-radius:6px;background:#ece0c8;overflow:hidden;}
+  .stat-list .row .bar i{display:block;height:100%;border-radius:6px;}
+  .stat-list .row .val{font-weight:700;font-size:16px;width:54px;text-align:right;flex:none;}
+  .btnrow{display:flex;gap:10px;margin-top:8px;}
+  button{font-family:inherit;font-weight:700;border:none;border-radius:12px;padding:13px 16px;
+    font-size:15px;cursor:pointer;transition:transform .1s ease;}
+  button:active{transform:scale(.96);}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 0 #d96a3e;flex:1;}
+  .btn-ghost{background:#fff;color:var(--ink);border:2px solid var(--line);flex:1;}
+  .btn-danger{background:#fff;color:#c0392b;border:2px solid #f3c0bb;width:100%;margin-top:14px;}
+  .btn-sm{padding:10px;font-size:14px;}
+  footer{text-align:center;color:var(--ink-soft);font-size:11px;padding:18px 0 8px;opacity:.7;}
+  #banner{display:none;margin:8px 0;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.6;border:2px dashed;}
+  #banner.warn{display:block;background:#fff6e0;border-color:#ffd23f;color:#7a5a10;}
+  #banner.err{display:block;background:#ffe9e6;border-color:#ff8a5b;color:#9a3412;}
+  #banner.ok{display:block;background:#e7f8ec;border-color:#51cf66;color:#1c6b32;}
+  #banner b{font-weight:700;}
+  #banner code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:5px;font-size:12px;}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);
+    border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;vertical-align:-2px;margin-right:6px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .saving{opacity:.5;pointer-events:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🎨</div>
+    <h1>キャラクター図鑑</h1>
+    <p>えをかいて、ずかんにとうろくしよう</p>
+  </header>
+
+  <div id="banner"></div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- 詳細ページ（見るだけ） -->
+<div class="overlay" id="detailOverlay">
+  <div class="sheet detail-sheet">
+    <button class="sheet-close" id="detailClose" aria-label="とじる">×</button>
+    <div class="detail-photo" id="detailPhoto"></div>
+    <h2 class="detail-name" id="detailName"></h2>
+    <div class="detail-chart" id="detailChart"></div>
+    <div class="stat-list" id="detailStats"></div>
+    <div class="btnrow">
+      <button class="btn-primary" id="detailEdit">✏️ へんしゅう</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <h2 id="sheetTitle">あたらしいキャラクター</h2>
+    <div class="photo-zone" id="photoZone">
+      <div class="hint" id="photoHint"><div class="ic">📷</div><div>しゃしんをとる</div></div>
+      <div id="photoHolder" style="display:none;width:100%;height:100%;"></div>
+    </div>
+    <div class="photo-btns">
+      <button class="btn-ghost btn-sm" id="btnCamera">📷 さつえい</button>
+      <button class="btn-ghost btn-sm" id="btnGallery">🖼️ えらぶ</button>
+    </div>
+    <input type="file" id="fileCamera" accept="image/*" capture="environment" style="display:none">
+    <input type="file" id="fileGallery" accept="image/*" style="display:none">
+    <label class="fld"><span class="lab">なまえ</span>
+      <input type="text" id="fName" placeholder="れい：カービィ" maxlength="40"></label>
+    <div class="chart-box"><div id="sheetChart"></div></div>
+    <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--atk)"></span>こうげき</span><input type="text" inputmode="numeric" id="s_atk" value="0"></div>
+    <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--hp)"></span>たいりょく</span><input type="text" inputmode="numeric" id="s_hp" value="0"></div>
+    <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--def)"></span>ぼうぎょ</span><input type="text" inputmode="numeric" id="s_def" value="0"></div>
+    <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--spd)"></span>すばやさ</span><input type="text" inputmode="numeric" id="s_spd" value="0"></div>
+    <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--int)"></span>かしこさ</span><input type="text" inputmode="numeric" id="s_int" value="0"></div>
+    <div class="btnrow">
+      <button class="btn-ghost" id="btnCancel">とじる</button>
+      <button class="btn-primary" id="btnSave">ほぞん</button>
+    </div>
+    <button class="btn-danger" id="btnDelete" style="display:none">このキャラクターをけす</button>
+  </div>
+</div>
+
+<footer>キャラクター図鑑 · データはFirebaseにほぞんされます</footer>
+
+<!-- ====================================================================== -->
+<!-- ① Firebaseの設定（あなたのプロジェクトの値が入っています） -->
+<!-- ====================================================================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc,
+    doc, serverTimestamp, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // データ（名前・数値）はFirebase、画像はCloudinaryに保存します
+  const firebaseConfig = {
+    apiKey: "AIzaSyAU8oGcnd98M0M3PySwyCDjfkG2Ca6_Qcg",
+    authDomain: "riku-zukan.firebaseapp.com",
+    projectId: "riku-zukan",
+    storageBucket: "riku-zukan.firebasestorage.app",
+    messagingSenderId: "484322593068",
+    appId: "1:484322593068:web:afa4675a2b217e3b56c489"
+  };
+
+  // ====================================================================== 
+  // ② Cloudinary（画像の保存先）の設定をここに入れてください
+  //    手順は「セットアップ手順.md」のステップ4を見てね
+  // ====================================================================== 
+  const CLOUDINARY = {
+    cloudName: "dwt8qlrww",       // あなたのCloudinaryクラウド名
+    uploadPreset: "riku-zukan"    // Unsignedプリセット名
+  };
+
+  const COL='characters';
+  let app, db;
+  try{
+    app=initializeApp(firebaseConfig);
+    db=getFirestore(app);
+  }catch(e){
+    const b=document.getElementById('banner');
+    b.className='err';
+    b.innerHTML='<b>⚠️ Firebaseのせつぞくに失敗しました。</b><br>設定を確認してください。<br><small>'+e.message+'</small>';
+    throw e;
+  }
+
+  const $ = id => document.getElementById(id);
+  const grid=$('grid'), overlay=$('overlay'), sheetTitle=$('sheetTitle'), banner=$('banner');
+  const photoHint=$('photoHint'), photoHolder=$('photoHolder');
+  const fileCamera=$('fileCamera'), fileGallery=$('fileGallery'), fName=$('fName');
+  const fields={atk:$('s_atk'),hp:$('s_hp'),def:$('s_def'),spd:$('s_spd'),int:$('s_int')};
+  const btnDelete=$('btnDelete');
+  const STAT_META=[['atk','こうげき','--atk'],['hp','たいりょく','--hp'],['def','ぼうぎょ','--def'],['spd','すばやさ','--spd'],['int','かしこさ','--int']];
+
+  // ---- 五角形レーダーチャート ----
+  // 各軸はそのステータスの上限基準で正規化（こうげき2000 / たいりょく5000 など）
+  const STAT_MAX={atk:2000,hp:5000,def:1000,spd:1000,int:1000};
+  const STAT_COLOR={atk:'#ff6b6b',hp:'#51cf66',def:'#4dabf7',spd:'#e0b000',int:'#cc5de8'};
+  function radarChart(item, opts={}){
+    const size=opts.size||220, showLabels=opts.labels!==false;
+    // ラベルを表示するときは外側に余白（pad）を確保して、見切れを防ぐ
+    const pad = showLabels ? 56 : 4;
+    const cx=size/2, cy=size/2;
+    const R=(size/2 - pad)*(showLabels?1:1.06);
+    const order=['atk','hp','def','spd','int'];
+    const labels={atk:'こうげき',hp:'たいりょく',def:'ぼうぎょ',spd:'すばやさ',int:'かしこさ'};
+    const pt=(i,rad)=>{const a=-Math.PI/2 + i*2*Math.PI/5;return [cx+Math.cos(a)*rad, cy+Math.sin(a)*rad];};
+    // 目盛りリング
+    let rings='';
+    for(let g=1;g<=4;g++){
+      const rr=R*g/4;
+      const p=order.map((_,i)=>pt(i,rr).map(n=>n.toFixed(1)).join(',')).join(' ');
+      rings+=`<polygon points="${p}" fill="none" stroke="#e2d2b4" stroke-width="1" ${g===4?'':'opacity=".7"'}/>`;
+    }
+    // 軸線
+    let axes='';
+    order.forEach((_,i)=>{const[x,y]=pt(i,R);axes+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e2d2b4" stroke-width="1"/>`;});
+    // データ多角形
+    const dpts=order.map((k,i)=>{
+      const v=Math.max(0,Math.min(1,(item[k]??0)/STAT_MAX[k]));
+      return pt(i, R*v).map(n=>n.toFixed(1)).join(',');
+    }).join(' ');
+    // 頂点ドット
+    let dots='';
+    order.forEach((k,i)=>{
+      const v=Math.max(0,Math.min(1,(item[k]??0)/STAT_MAX[k]));
+      const[x,y]=pt(i,R*v);
+      dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${size>140?3.2:2}" fill="${STAT_COLOR[k]}"/>`;
+    });
+    // ラベル（名前＋数値を2行に。左右端の軸は内側へ寄せて見切れ防止）
+    let labs='';
+    if(showLabels){
+      order.forEach((k,i)=>{
+        const cos=Math.cos(-Math.PI/2 + i*2*Math.PI/5);
+        const anchor = cos<-0.3?'end':(cos>0.3?'start':'middle');
+        const side = anchor!=='middle';      // 左右に張り出す軸
+        const off = side ? 8 : 18;
+        const fs  = side ? 10 : 11;           // 横は少し小さく
+        const[lx,ly]=pt(i,R+off);
+        labs+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" font-size="${fs}" font-weight="700" fill="#7a6a55">${labels[k]}</text>`;
+        labs+=`<text x="${lx.toFixed(1)}" y="${(ly+12).toFixed(1)}" text-anchor="${anchor}" font-size="9.5" fill="#a89a82">${item[k]??0}</text>`;
+      });
+    }
+    const vb = showLabels ? `0 0 ${size} ${size}` : `0 0 ${size} ${size}`;
+    return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;overflow:visible;">
+      ${rings}${axes}
+      <polygon points="${dpts}" fill="rgba(255,138,91,.30)" stroke="#ff8a5b" stroke-width="2" stroke-linejoin="round"/>
+      ${dots}${labs}
+    </svg>`;
+  }
+
+  // ---- データ（Firestoreから読み込み） ----
+  let DATA=[];
+  let seededOnce=false;
+  async function loadFromFirebase(){
+    try{
+      let snap=await getDocs(query(collection(db,COL),orderBy('createdAt','asc')));
+      // 初回起動でデータが空っぽなら、見本として1件だけ追加（あとで普通に削除できます）
+      if(snap.empty && !seededOnce){
+        seededOnce=true;
+        await addDoc(collection(db,COL),{
+          name:'カービィ', atk:1000, hp:4000, def:50, spd:10, int:20,
+          createdAt:serverTimestamp()
+        });
+        snap=await getDocs(query(collection(db,COL),orderBy('createdAt','asc')));
+      }
+      DATA=snap.docs.map(d=>({id:d.id,...d.data()}));
+      render();
+      // Firestore接続成功。ただしCloudinary未設定の警告が出ているときはそれを優先表示
+      if(banner.className!=='ok' && banner.className!=='warn'){
+        banner.className='ok';
+        banner.innerHTML='<b>✅ せつぞくOK！</b> このURLを知っている人はだれでも見たり編集できます。';
+        setTimeout(()=>{banner.style.display='none';},3500);
+      }
+    }catch(e){
+      DATA=[]; render(); // 失敗しても「＋ あたらしくつくる」は出す
+      banner.className='err';
+      banner.innerHTML='<b>⚠️ データの読み込みに失敗しました。</b><br>Firestore（データベース）の作成と公開ルールがまだかもしれません。設定後にこのページを再読み込みしてください。<br><small>'+e.message+'</small>';
+    }
+  }
+
+  let editingId=null, pendingImg=null; // pendingImg = {url, file}
+
+  function render(){
+    grid.innerHTML='';
+    DATA.forEach(it=>{
+      const card=document.createElement('div');card.className='card';
+      const mini=STAT_META.map(([k,l,v])=>`<span><span class="dot" style="background:var(${v})"></span>${it[k]??0}</span>`).join('');
+      const thumb = it.imageUrl ? `<img src="${it.imageUrl}" loading="lazy">` : '<span class="ph">🎨</span>';
+      card.innerHTML=`<div class="thumb">${thumb}</div><div class="body">
+        <div class="name">${esc(it.name||'なまえなし')}</div>
+        <div class="cardrow">
+          <div class="ministats">${mini}</div>
+          <div class="minichart">${radarChart(it,{size:74,labels:false})}</div>
+        </div></div>`;
+      card.onclick=()=>openDetail(it);grid.appendChild(card);
+    });
+    const add=document.createElement('div');add.className='addcard';
+    add.innerHTML='<div class="plus">＋</div><div>あたらしくつくる</div>';
+    add.onclick=()=>openSheet(null);grid.appendChild(add);
+  }
+  function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+  function setPhoto(content){ photoHolder.innerHTML=content; photoHolder.style.display='block'; photoHint.style.display='none'; }
+  function clearPhoto(){ photoHolder.innerHTML=''; photoHolder.style.display='none'; photoHint.style.display='flex'; }
+
+  function readStats(){const o={};STAT_META.forEach(([k])=>o[k]=parseInt(fields[k].value,10)||0);return o;}
+  function updateSheetChart(){ $('sheetChart').innerHTML=radarChart(readStats(),{size:240,labels:true}); }
+  STAT_META.forEach(([k])=>fields[k].addEventListener('input',updateSheetChart));
+
+  // ---- 詳細ページ（見るだけ） ----
+  let detailId=null;
+  function openDetail(it){
+    detailId=it.id;
+    const photo = it.imageUrl ? `<img src="${it.imageUrl}">` : '<span class="ph">🎨</span>';
+    $('detailPhoto').innerHTML=photo;
+    $('detailName').textContent=it.name||'なまえなし';
+    $('detailChart').innerHTML=radarChart(it,{size:260,labels:true});
+    $('detailStats').innerHTML=STAT_META.map(([k,lab,cssvar])=>{
+      const v=it[k]??0;
+      const ratio=Math.max(0,Math.min(1,v/STAT_MAX[k]))*100;
+      return `<div class="row">
+        <span class="nm"><span class="dot" style="background:var(${cssvar})"></span>${lab}</span>
+        <span class="bar"><i style="width:${ratio.toFixed(0)}%;background:var(${cssvar})"></i></span>
+        <span class="val">${v}</span>
+      </div>`;
+    }).join('');
+    $('detailOverlay').classList.add('show');
+  }
+  function closeDetail(){ $('detailOverlay').classList.remove('show'); }
+  $('detailClose').onclick=closeDetail;
+  $('detailEdit').onclick=()=>{ const it=DATA.find(d=>d.id===detailId); openSheet(it,true); };
+  $('detailOverlay').onclick=e=>{ if(e.target===$('detailOverlay')) closeDetail(); };
+
+  let cameFromDetail=false;
+  function openSheet(it, fromDetail=false){
+    cameFromDetail = fromDetail;
+    closeDetail();
+    editingId=it?it.id:null; pendingImg=null;
+    sheetTitle.textContent=it?'へんしゅう':'あたらしいキャラクター';
+    fName.value=it?(it.name||''):'';
+    STAT_META.forEach(([k])=>fields[k].value=it?(it[k]??0):0);
+    updateSheetChart();
+    if(it&&it.imageUrl) setPhoto(`<img src="${it.imageUrl}" style="width:100%;height:100%;object-fit:cover">`);
+    else clearPhoto();
+    btnDelete.style.display=it?'block':'none';
+    overlay.classList.add('show');
+  }
+  function closeSheet(){overlay.classList.remove('show');}
+
+  function handleFile(file){
+    if(!file)return;
+    pendingImg={file};
+    const url=URL.createObjectURL(file);
+    setPhoto(`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`);
+  }
+  $('btnCamera').onclick=()=>fileCamera.click();
+  $('btnGallery').onclick=()=>fileGallery.click();
+  fileCamera.onchange=e=>handleFile(e.target.files[0]);
+  fileGallery.onchange=e=>handleFile(e.target.files[0]);
+
+  // 画像を縮小（通信量と容量の節約）
+  async function shrink(file, max=1280, quality=0.82){
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file);});
+    let {width:w,height:h}=img;
+    if(w>max||h>max){const r=Math.min(max/w,max/h);w=Math.round(w*r);h=Math.round(h*r);}
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    cv.getContext('2d').drawImage(img,0,0,w,h);
+    return await new Promise(res=>cv.toBlob(res,'image/jpeg',quality));
+  }
+
+  // Cloudinaryへ画像をアップロードして公開URLを返す
+  async function uploadToCloudinary(blob){
+    if(CLOUDINARY.cloudName.startsWith('ここに')||CLOUDINARY.uploadPreset.startsWith('ここに')){
+      throw new Error('Cloudinaryの設定（クラウド名・プリセット名）がまだです。');
+    }
+    const form=new FormData();
+    form.append('file',blob);
+    form.append('upload_preset',CLOUDINARY.uploadPreset);
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`,{method:'POST',body:form});
+    if(!res.ok){
+      let msg='アップロードに失敗しました（'+res.status+'）';
+      try{const j=await res.json();if(j.error&&j.error.message)msg+='：'+j.error.message;}catch(_){}
+      throw new Error(msg);
+    }
+    const j=await res.json();
+    return j.secure_url;
+  }
+
+  const btnSave=$('btnSave');
+  btnSave.onclick=async()=>{
+    const name=fName.value.trim();
+    if(!name){alert('なまえをいれてね');return;}
+    btnSave.classList.add('saving');
+    btnSave.innerHTML='<span class="spin"></span>ほぞん中…';
+    try{
+      const data={name};
+      STAT_META.forEach(([k])=>{data[k]=parseInt(fields[k].value,10)||0;});
+      if(pendingImg&&pendingImg.file){
+        const blob=await shrink(pendingImg.file);
+        data.imageUrl=await uploadToCloudinary(blob);
+      }
+      if(editingId){
+        await updateDoc(doc(db,COL,editingId),data);
+      }else{
+        data.createdAt=serverTimestamp();
+        await addDoc(collection(db,COL),data);
+      }
+      closeSheet();closeDetail();
+      await loadFromFirebase();
+    }catch(e){
+      alert('ほぞんに失敗しました：\n'+e.message);
+    }finally{
+      btnSave.classList.remove('saving');btnSave.textContent='ほぞん';
+    }
+  };
+  btnDelete.onclick=async()=>{
+    if(!editingId)return;
+    if(!confirm('このキャラクターをけしますか？')) return;
+    btnDelete.classList.add('saving');
+    try{
+      await deleteDoc(doc(db,COL,editingId));
+      closeSheet();closeDetail();
+      await loadFromFirebase();
+    }catch(e){
+      alert('けすのに失敗しました：\n'+e.message);
+    }finally{
+      btnDelete.classList.remove('saving');
+    }
+  };
+  $('btnCancel').onclick=()=>{ closeSheet(); if(cameFromDetail){ const it=DATA.find(d=>d.id===editingId); if(it) openDetail(it); } };
+  overlay.onclick=e=>{if(e.target===overlay){ closeSheet(); if(cameFromDetail){ const it=DATA.find(d=>d.id===editingId); if(it) openDetail(it); } }};
+
+  // Cloudinary未設定なら案内（Firebaseは別途バナーで判定）
+  if(CLOUDINARY.cloudName.startsWith('ここに')||CLOUDINARY.uploadPreset.startsWith('ここに')){
+    banner.className='warn';
+    banner.innerHTML='<b>⚙️ 画像保存（Cloudinary）の設定がまだです。</b><br>名前と数値は使えますが、写真を保存するには、このファイル上部の <code>CLOUDINARY</code> にクラウド名とプリセット名を入れてください。手順は「セットアップ手順」を見てね。';
+  }
+
+  loadFromFirebase();
+</script>
+</body>
+</html>
