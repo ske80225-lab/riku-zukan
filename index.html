@@ -179,7 +179,7 @@
 
 <footer>
   キャラクター図鑑 · データはFirebaseにほぞんされます<br>
-  <button id="reseed" style="margin-top:8px;background:none;border:none;color:var(--ink-soft);text-decoration:underline;font-size:11px;cursor:pointer;opacity:.7;">さいしょの40たいを入れ直す</button>
+
 </footer>
 
 <!-- ====================================================================== -->
@@ -486,33 +486,6 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
     banner.innerHTML='<b>⚙️ 画像保存（Cloudinary）の設定がまだです。</b><br>名前と数値は使えますが、写真を保存するには、このファイル上部の <code>CLOUDINARY</code> にクラウド名とプリセット名を入れてください。手順は「セットアップ手順」を見てね。';
   }
 
-  // 「さいしょの40たいを入れ直す」ボタン（テスト・やり直し用）
-  $('reseed').onclick=async()=>{
-    if(!confirm('いまある図鑑をぜんぶ消して、Notionの40たいを入れ直します。\nよろしいですか？')) return;
-    if(!confirm('本当に入れ直しますか？\nいま登録した内容（追加した絵や数値）はすべて消えます。')) return;
-    banner.style.display='block';banner.className='warn';
-    banner.innerHTML='<b>⏳ 入れ直し中…</b> 今あるデータを消しています。';
-    try{
-      // 既存を全削除
-      const cur=await getDocs(collection(db,COL));
-      for(const d of cur.docs){ await deleteDoc(doc(db,COL,d.id)); }
-      // 40体を再投入
-      banner.innerHTML='<b>⏳ さいしょのデータ（40たい）をとうろく中…</b> すこし待ってね。';
-      let base=Date.now();
-      for(const s of (window.__SEED__||[])){
-        const rec={name:s.name, atk:s.atk, hp:s.hp, def:s.def, spd:s.spd, int:s.int,
-          createdAt:new Date(base + (s.no||0)*1000)};
-        if(s.imageUrl) rec.imageUrl=s.imageUrl;
-        await addDoc(collection(db,COL),rec);
-      }
-      banner.className='';banner.style.display='none';
-      await loadFromFirebase();
-      alert('40たいを入れ直しました！');
-    }catch(e){
-      banner.className='err';
-      banner.innerHTML='<b>⚠️ 入れ直しに失敗しました。</b><br><small>'+e.message+'</small>';
-    }
-  };
 
   loadFromFirebase();
 </script>
