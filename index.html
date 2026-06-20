@@ -443,11 +443,12 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
     $('detailPrev').disabled = idx <= 0;
     $('detailNext').disabled = idx >= DATA.length - 1;
     $('detailOverlay').classList.add('show');
+    document.body.style.overflow='hidden';
   }
-  function closeDetail(){ $('detailOverlay').classList.remove('show'); }
+  function closeDetail(){ $('detailOverlay').classList.remove('show'); if(!overlay.classList.contains('show')) document.body.style.overflow=''; }
   $('detailClose').onclick=closeDetail;
   $('detailEdit').onclick=()=>{ const it=DATA.find(d=>d.id===detailId); openSheet(it,true); };
-  $('detailOverlay').onclick=e=>{ if(e.target===$('detailOverlay')) closeDetail(); };
+  $('detailOverlay').onclick=e=>{};
   $('detailPrev').onclick=()=>{ const idx=DATA.findIndex(d=>d.id===detailId); if(idx>0) openDetail(DATA[idx-1]); };
   $('detailNext').onclick=()=>{ const idx=DATA.findIndex(d=>d.id===detailId); if(idx<DATA.length-1) openDetail(DATA[idx+1]); };
 
@@ -474,8 +475,9 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
       $('editPrev').style.display='none'; $('editNext').style.display='none';
     }
     overlay.classList.add('show');
+    document.body.style.overflow='hidden';
   }
-  function closeSheet(){overlay.classList.remove('show');}
+  function closeSheet(){overlay.classList.remove('show'); if(!$('detailOverlay').classList.contains('show')) document.body.style.overflow='';}
 
   function handleFile(file){
     if(!file)return;
@@ -558,7 +560,7 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
     }
   };
   $('btnCancel').onclick=()=>{ closeSheet(); if(cameFromDetail){ const it=DATA.find(d=>d.id===editingId); if(it) openDetail(it); } };
-  overlay.onclick=e=>{if(e.target===overlay){ closeSheet(); if(cameFromDetail){ const it=DATA.find(d=>d.id===editingId); if(it) openDetail(it); } }};
+  overlay.onclick=e=>{};
   $('editPrev').onclick=()=>{ const idx=DATA.findIndex(d=>d.id===editingId); if(idx>0){ closeSheet(); openSheet(DATA[idx-1], cameFromDetail); } };
   $('editNext').onclick=()=>{ const idx=DATA.findIndex(d=>d.id===editingId); if(idx<DATA.length-1){ closeSheet(); openSheet(DATA[idx+1], cameFromDetail); } };
 
