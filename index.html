@@ -103,6 +103,54 @@
   .stat-list .row .nm{display:flex;align-items:center;gap:7px;font-weight:700;font-size:14px;width:96px;flex:none;text-align:left;}
   .stat-list .row .bar{flex:1;height:10px;border-radius:6px;background:#ece0c8;overflow:hidden;}
   .stat-list .row .bar i{display:block;height:100%;border-radius:6px;}
+
+  /* しんかセクション */
+  .evo-section{margin:20px 0 16px;text-align:center;}
+  .evo-section h3{font-family:'Mochiy Pop One',sans-serif;font-size:16px;margin:0 0 10px;color:var(--ink);}
+  .evo-scroll{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
+  .evo-scroll::-webkit-scrollbar{height:4px;}
+  .evo-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  .evo-card{flex:0 0 42%;scroll-snap-align:center;background:var(--card);border:2px solid var(--line);
+    border-radius:14px;padding:10px;text-align:center;cursor:pointer;transition:transform .15s;}
+  .evo-card:active{transform:scale(.95);}
+  .evo-card .evo-img{width:100%;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:#d9cdb6;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 6px;}
+  .evo-card .evo-img img{width:100%;height:100%;object-fit:cover;}
+  .evo-card .evo-img .ph{font-size:28px;opacity:.5;}
+  .evo-card .evo-num{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .evo-card .evo-name{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* しんか編集 */
+  .evo-slots{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .evo-slot{width:110px;background:var(--card);border:2px dashed var(--line);border-radius:14px;padding:8px;
+    text-align:center;cursor:pointer;transition:transform .15s;}
+  .evo-slot.filled{border-style:solid;}
+  .evo-slot:active{transform:scale(.95);}
+  .evo-slot .evo-img{width:94px;height:70px;border-radius:10px;overflow:hidden;background:#d9cdb6;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 6px;}
+  .evo-slot .evo-img img{width:100%;height:100%;object-fit:cover;}
+  .evo-slot .evo-placeholder{font-size:28px;opacity:.3;}
+  .evo-slot .evo-num{font-size:11px;color:var(--ink-soft);font-weight:700;}
+  .evo-slot .evo-name{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:94px;}
+  .evo-slot .evo-remove{font-size:11px;color:#e55;margin-top:2px;cursor:pointer;}
+
+  /* しんか選択モーダル */
+  .evo-picker-overlay{position:fixed;inset:0;background:rgba(40,30,20,.55);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;z-index:60;}
+  .evo-picker-overlay.show{display:flex;}
+  .evo-picker{background:var(--bg2);width:90%;max-width:400px;max-height:70vh;border-radius:22px;
+    padding:18px 16px;overflow-y:auto;animation:slideup .25s ease;}
+  .evo-picker h3{font-family:'Mochiy Pop One',sans-serif;font-size:16px;margin:0 0 12px;text-align:center;}
+  .evo-picker-list{display:flex;flex-direction:column;gap:8px;}
+  .evo-pick-item{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--line);
+    border-radius:12px;padding:8px 12px;cursor:pointer;transition:transform .15s;}
+  .evo-pick-item:active{transform:scale(.97);}
+  .evo-pick-item img{width:48px;height:36px;border-radius:8px;object-fit:cover;}
+  .evo-pick-item .ph{width:48px;height:36px;border-radius:8px;background:#d9cdb6;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.5;}
+  .evo-pick-item .pick-info{flex:1;text-align:left;}
+  .evo-pick-item .pick-num{font-size:11px;color:var(--ink-soft);font-weight:700;}
+  .evo-pick-item .pick-name{font-size:14px;font-weight:700;color:var(--ink);}
+  .evo-picker-cancel{display:block;margin:12px auto 0;}
   .stat-list .row .val{font-weight:700;font-size:16px;width:54px;text-align:right;flex:none;}
   .btnrow{display:flex;gap:10px;margin-top:8px;}
   button{font-family:inherit;font-weight:700;border:none;border-radius:12px;padding:13px 16px;
@@ -176,6 +224,10 @@
     <p class="detail-desc" id="detailDesc"></p>
     <div class="detail-chart" id="detailChart"></div>
     <div class="stat-list" id="detailStats"></div>
+    <div class="evo-section" id="evoSection">
+      <h3>🔄 しんか</h3>
+      <div class="evo-scroll" id="evoScroll"></div>
+    </div>
     <div class="btnrow">
       <button class="btn-primary" id="detailEdit">✏️ へんしゅう</button>
     </div>
@@ -208,11 +260,23 @@
     <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--def)"></span>ぼうぎょ</span><input type="text" inputmode="numeric" id="s_def" value="0"></div>
     <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--spd)"></span>すばやさ</span><input type="text" inputmode="numeric" id="s_spd" value="0"></div>
     <div class="stat-row"><span class="slab"><span class="dot" style="background:var(--int)"></span>かしこさ</span><input type="text" inputmode="numeric" id="s_int" value="0"></div>
+    <div class="evo-edit-section" id="evoEditSection">
+      <h3 style="font-family:'Mochiy Pop One',sans-serif;font-size:16px;margin:16px 0 8px;text-align:center;">🔄 しんか</h3>
+      <div class="evo-slots" id="evoSlots"></div>
+    </div>
     <div class="btnrow">
       <button class="btn-ghost" id="btnCancel">とじる</button>
       <button class="btn-primary" id="btnSave">ほぞん</button>
     </div>
     <button class="btn-danger" id="btnDelete" style="display:none">このキャラクターをけす</button>
+  </div>
+</div>
+
+<div class="evo-picker-overlay" id="evoPickerOverlay">
+  <div class="evo-picker">
+    <h3>しんかキャラをえらぶ</h3>
+    <div class="evo-picker-list" id="evoPickerList"></div>
+    <button class="btn-ghost evo-picker-cancel" id="evoPickerCancel">とじる</button>
   </div>
 </div>
 
@@ -439,6 +503,28 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
         <span class="val">${v}</span>
       </div>`;
     }).join('');
+    // しんかセクション
+    const evoIds = it.evolutions || [];
+    const evoScroll = $('evoScroll');
+    if(evoIds.length > 0){
+      $('evoSection').style.display = 'block';
+      evoScroll.innerHTML = evoIds.map(eid => {
+        const ec = DATA.find(d => d.id === eid);
+        if(!ec) return '';
+        const eidx = DATA.indexOf(ec);
+        const eImg = ec.imageUrl ? `<img src="${ec.imageUrl}">` : '<span class="ph">🎨</span>';
+        return `<div class="evo-card" data-evo-id="${eid}">
+          <div class="evo-img">${eImg}</div>
+          <div class="evo-num">No.${eidx+1}</div>
+          <div class="evo-name">${esc(ec.name||'なまえなし')}</div>
+        </div>`;
+      }).join('');
+      evoScroll.querySelectorAll('.evo-card').forEach(card => {
+        card.onclick = () => { const ec = DATA.find(d => d.id === card.dataset.evoId); if(ec) openDetail(ec); };
+      });
+    } else {
+      $('evoSection').style.display = 'none';
+    }
     // ナビゲーション矢印
     $('detailPrev').disabled = idx <= 0;
     $('detailNext').disabled = idx >= DATA.length - 1;
@@ -452,6 +538,79 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
   $('detailPrev').onclick=()=>{ const idx=DATA.findIndex(d=>d.id===detailId); if(idx>0) openDetail(DATA[idx-1]); };
   $('detailNext').onclick=()=>{ const idx=DATA.findIndex(d=>d.id===detailId); if(idx<DATA.length-1) openDetail(DATA[idx+1]); };
 
+  // ---- しんか編集 ----
+  let pendingEvos = []; // array of character IDs (max 3)
+  let evoPickerSlotIdx = -1;
+
+  function renderEvoSlots(){
+    const slots = $('evoSlots');
+    let html = '';
+    for(let i = 0; i < 3; i++){
+      const eid = pendingEvos[i];
+      const ec = eid ? DATA.find(d => d.id === eid) : null;
+      if(ec){
+        const eidx = DATA.indexOf(ec);
+        const eImg = ec.imageUrl ? `<img src="${ec.imageUrl}">` : '<span class="ph" style="font-size:24px;opacity:.5">🎨</span>';
+        html += `<div class="evo-slot filled" data-slot="${i}">
+          <div class="evo-img">${eImg}</div>
+          <div class="evo-num">No.${eidx+1}</div>
+          <div class="evo-name">${esc(ec.name||'なまえなし')}</div>
+          <div class="evo-remove" data-slot="${i}">✕ はずす</div>
+        </div>`;
+      } else {
+        html += `<div class="evo-slot" data-slot="${i}">
+          <div class="evo-img"><span class="evo-placeholder">＋</span></div>
+          <div class="evo-name" style="color:var(--ink-soft)">えらぶ</div>
+        </div>`;
+      }
+    }
+    slots.innerHTML = html;
+    slots.querySelectorAll('.evo-slot').forEach(slot => {
+      slot.onclick = (e) => {
+        if(e.target.classList.contains('evo-remove')){
+          pendingEvos[parseInt(e.target.dataset.slot)] = null;
+          pendingEvos = pendingEvos.filter(Boolean);
+          renderEvoSlots();
+          return;
+        }
+        evoPickerSlotIdx = parseInt(slot.dataset.slot);
+        openEvoPicker();
+      };
+    });
+  }
+
+  function openEvoPicker(){
+    const list = $('evoPickerList');
+    const exclude = [editingId, ...pendingEvos.filter(Boolean)];
+    const available = DATA.filter(d => !exclude.includes(d.id));
+    list.innerHTML = available.map(c => {
+      const cidx = DATA.indexOf(c);
+      const cImg = c.imageUrl ? `<img src="${c.imageUrl}">` : '<div class="ph">🎨</div>';
+      return `<div class="evo-pick-item" data-id="${c.id}">
+        ${cImg}
+        <div class="pick-info">
+          <div class="pick-num">No.${cidx+1}</div>
+          <div class="pick-name">${esc(c.name||'なまえなし')}</div>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.evo-pick-item').forEach(item => {
+      item.onclick = () => {
+        if(pendingEvos.length <= evoPickerSlotIdx){
+          pendingEvos.push(item.dataset.id);
+        } else {
+          pendingEvos[evoPickerSlotIdx] = item.dataset.id;
+        }
+        closeEvoPicker();
+        renderEvoSlots();
+      };
+    });
+    $('evoPickerOverlay').classList.add('show');
+  }
+  function closeEvoPicker(){ $('evoPickerOverlay').classList.remove('show'); }
+  $('evoPickerCancel').onclick = closeEvoPicker;
+  $('evoPickerOverlay').onclick = e => { if(e.target === $('evoPickerOverlay')) closeEvoPicker(); };
+
   let cameFromDetail=false;
   function openSheet(it, fromDetail=false){
     cameFromDetail = fromDetail;
@@ -464,6 +623,8 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
     updateSheetChart();
     if(it&&it.imageUrl) setPhoto(`<img src="${it.imageUrl}" style="width:100%;height:100%;object-fit:cover">`);
     else clearPhoto();
+    pendingEvos = it && it.evolutions ? [...it.evolutions] : [];
+    renderEvoSlots();
     btnDelete.style.display=it?'block':'none';
     // 編集画面ナビゲーション矢印
     if(it){
@@ -525,7 +686,7 @@ window.__SEED__=[{"name": "カービィ", "no": 1, "atk": 1000, "hp": 4000, "def
     btnSave.classList.add('saving');
     btnSave.innerHTML='<span class="spin"></span>ほぞん中…';
     try{
-      const data={name, description:$('fDesc').value.trim()};
+      const data={name, description:$('fDesc').value.trim(), evolutions:pendingEvos.filter(Boolean)};
       STAT_META.forEach(([k])=>{data[k]=parseInt(fields[k].value,10)||0;});
       if(pendingImg&&pendingImg.file){
         const blob=await shrink(pendingImg.file);
